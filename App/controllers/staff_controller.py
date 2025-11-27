@@ -2,8 +2,10 @@ from App.database import db
 from App.models import User,Staff,Student,Request
 
 def register_staff(name,email,password): #registers a new staff member
-    new_staff = Staff.create_staff(name, email, password)
-    return new_staff
+    newstaff = Staff(username=name, email=email, password=password)
+    db.session.add(newstaff)
+    db.session.commit()
+    return newstaff
 
 def fetch_all_requests(): #fetches all pending requests for staff to review
     pending_requests = Request.query.filter_by(status='pending').all()
@@ -25,6 +27,7 @@ def fetch_all_requests(): #fetches all pending requests for staff to review
     return requests_data
 
 def process_request_approval(staff_id, request_id): #staff approves a student's hours request
+    from App.models import LoggedHours
     staff = Staff.query.get(staff_id)
     if not staff:
         raise ValueError(f"Staff with id {staff_id} not found.")
@@ -33,9 +36,18 @@ def process_request_approval(staff_id, request_id): #staff approves a student's 
     if not request:
         raise ValueError(f"Request with id {request_id} not found.")
     
+    if request.status != 'pending':
+        raise ValueError(f"Request {request_id} is not pending.")
+    
     student = Student.query.get(request.student_id)
-    name = student.username if student else "Unknown" # should always find student if data integrity is maintained
-    logged = staff.approve_request(request)
+    name = student.username if student else "Unknown"
+    
+    # Mark request as approved
+    request.status = 'approved'
+    # Create a LoggedHours entry
+    logged = LoggedHours(student_id=request.student_id, staff_id=staff.staff_id, hours=request.hours, status='approved')
+    db.session.add(logged)
+    db.session.commit()
 
     return {
         'request': request,
@@ -53,18 +65,22 @@ def process_request_denial(staff_id, request_id): #staff denies a student's hour
     if not request:
         raise ValueError(f"Request with id {request_id} not found.")
     
+    if request.status != 'pending':
+        raise ValueError(f"Request {request_id} is not pending.")
+    
     student = Student.query.get(request.student_id)
     name = student.username if student else "Unknown"
-    denied = staff.deny_request(request)
+    
+    request.status = 'denied'
+    db.session.commit()
     
     return {
         'request': request,
         'student_name': name,
         'staff_name': staff.username,
-        'denial_successful': denied
+        'denial_successful': True
     }
     
 def get_all_staff_json(): #returns all staff members in JSON format
     staff_members = Staff.query.all()
-    return [staff.get_json() for staff in staff_members]
-
+    return [staff.get_json() for staff in staff_members]
