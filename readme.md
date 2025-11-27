@@ -61,3 +61,5 @@ Intended users: administrators, staff reviewers, and students at educational ins
 Run unit and integration tests via the Flask CLI testing command. Example commands:
 
 - `flask test user int` — or - `flask test user unit` — or `flask test user` — runs tests related to the `user` tests, including both integration (`int`) and unit (`unit`) scopes.
+
+## TEST COMMIT & PUSH
