@@ -185,7 +185,7 @@ def viewmyAccolades():
 
 #Student command to view leaderboard of students by approved hours
 @student_cli.command("viewLeaderboard", help="View leaderboard of students by approved hours")
-def viewLeaderboard():
+def student_viewLeaderboard():
     print("\n")
     try:
         leaderboard = generate_leaderboard()
@@ -199,6 +199,38 @@ def viewLeaderboard():
 
     except Exception as e:
         print(f"An error occurred while generating the leaderboard: {e}")
+    print("\n")
+
+#Student command to view activity history
+@student_cli.command("viewActivityHistory", help="View activity history for a student")
+def view_activity_history():
+    from App.controllers.student_controller import get_activity_history
+    print("\n")
+    try:
+        student_id = int(input("Enter your student ID: "))
+        history = get_activity_history(student_id)
+
+        if not history:
+            print(f"No activity history found for student {student_id}.")
+            return
+        
+        print(f"Activity History for Student {student_id}:")
+        print("=" * 80)
+        for activity in history:
+            timestamp = activity['timestamp'][:19].replace('T', ' ')
+            print(f"\n[{timestamp}]")
+            print(f"  Hours Earned: {activity['hours']}")
+            print(f"  Cumulative Hours: {activity['cumulative_hours']}")
+            print(f"  Status: {activity['status']}")
+            
+            if activity['milestones_achieved']:
+                print(f"  🏆 Milestones Achieved: {', '.join(activity['milestones_achieved'])}")
+        print("\n" + "=" * 80)
+
+    except ValueError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
     print("\n")
 
 app.cli.add_command(student_cli) # add the group to the cli
@@ -310,7 +342,7 @@ def denyRequest():
 
 #staff command to view leaderboard of students by approved hours
 @staff_cli.command("viewLeaderboard", help="View leaderboard of students by approved hours")
-def viewLeaderboard():
+def staff_viewLeaderboard():
     print("\n")
     try:
         leaderboard = generate_leaderboard()
