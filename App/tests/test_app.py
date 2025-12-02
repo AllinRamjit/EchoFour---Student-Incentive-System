@@ -38,6 +38,20 @@ LOGGER = logging.getLogger(__name__)
 '''
 class UserUnitTests(unittest.TestCase):
 
+    def test_init_user(self):
+        Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
+        self.assertEqual(Testuser.username, "David Goggins")   
+        self.assertEqual(Testuser.role, "student")
+        self.assertEqual(Testuser.email, "goggs@gmail.com") 
+        self.assertTrue(Testuser.set_password("goggs123"))
+
+    def test_user_get_json(self):
+        Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
+        user_json = Testuser.get_json()
+        self.assertEqual(user_json['username'], "David Goggins")
+        self.assertEqual(user_json['email'], "goggs@gmail.com")
+        self.assertEqual(user_json['role'], "student")
+
     def test_check_password(self):
         Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
         self.assertTrue(Testuser.check_password("goggs123"))
@@ -57,12 +71,6 @@ class StaffUnitTests(unittest.TestCase):
         self.assertEqual(newstaff.email, "jacob55@gmail.com")
         self.assertTrue(newstaff.check_password("Jakey55"))
 
-    def test_staff_get_json(self):
-        Teststaff = Staff("Jacob Lester", "jacob55@gmail.com", "jakey55")
-        staff_json = Teststaff.get_json()
-        self.assertEqual(staff_json['username'], "Jacob Lester")
-        self.assertEqual(staff_json['email'], "jacob55@gmail.com")
-
     def test_repr_staff(self):
         Teststaff = Staff("Jacob Lester", "jacob55@gmail.com", "jakey55")
         rep = repr(Teststaff)
@@ -73,29 +81,37 @@ class StaffUnitTests(unittest.TestCase):
         self.assertIn("Jacob Lester", rep)
         self.assertIn("jacob55@gmail.com", rep)
 
+    def test_staff_get_json(self):
+        Teststaff = Staff("Jacob Lester", "jacob55@gmail.com", "jakey55")
+        staff_json = Teststaff.get_json()
+        self.assertEqual(staff_json['username'], "Jacob Lester")
+        self.assertEqual(staff_json['email'], "jacob55@gmail.com")
+
+
+
 class StudentUnitTests(unittest.TestCase):
 
     def test_init_student(self):
-        newStudent = Student("David Moore", "david77@outlook.com" , "iloveschool67")
-        self.assertEqual(newStudent.username, "David Moore")
-        self.assertEqual(newStudent.email, "david77@outlook.com")
-        self.assertTrue(newStudent.check_password("iloveschool67"))
-
-    def test_student_get_json(self):
-        newstudent = Student("David Moore", "david77@outlook.com" , "iloveschool67")
-        student_json = newstudent.get_json()
-        self.assertEqual(student_json['username'], "David Moore")
-        self.assertEqual(student_json['email'], "david77@outlook.com")
+        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
+        self.assertEqual(newstudent.username, "Alice Smith")
+        self.assertEqual(newstudent.email, "alice123@gmail.com")
+        self.assertTrue(newstudent.check_password("password123"))
 
     def test_repr_student(self):
-        newstudent = Student("David Moore", "david77@outlook.com" , "iloveschool67")
-        rep = repr(newstudent)
+        newstudent = Student("Alice Smith", "alice123@gmail.com", "password123")
+        rep = repr(newstudent)  
         # Check all parts of the string representation
         self.assertIn("Student ID=", rep)
         self.assertIn("Name=", rep)
         self.assertIn("Email=", rep)
-        self.assertIn("David Moore", rep)
-        self.assertIn("david77@outlook.com", rep)
+        self.assertIn("Alice Smith", rep)
+        self.assertIn("alice123@gmail.com", rep)
+
+    def test_student_get_json(self):
+        newstudent = Student("Alice Smith", "alice123@hmail.com" , "password123")
+        student_json = newstudent.get_json()
+        self.assertEqual(student_json['username'], "Alice Smith")
+        self.assertEqual(student_json['email'], "alice123@gmail.com")
 
 class RequestUnitTests(unittest.TestCase):
 
@@ -116,6 +132,15 @@ class RequestUnitTests(unittest.TestCase):
         self.assertIn("4", rep)
         self.assertIn("40", rep)
         self.assertIn("denied", rep)
+
+    def test_request_get_json(self):
+        Testrequest = Request(student_id=7, hours=15, status='approved')
+        request_json = Testrequest.get_json()
+        self.assertEqual(request_json['student_id'], 7)
+        self.assertEqual(request_json['hours'], 15)
+        self.assertEqual(request_json['status'], 'approved')
+        self.assertIsNotNone(request_json['timestamp'])
+
 
 class LoggedHoursUnitTests(unittest.TestCase):
 
@@ -139,14 +164,17 @@ class LoggedHoursUnitTests(unittest.TestCase):
         self.assertIn("1", rep)
         self.assertIn("2", rep)
         self.assertIn("20", rep)
-        
 
-
-    
-
-
-
-
+    def test_loggedhours_get_json(self):
+        from App.models import LoggedHours
+        Testlogged = LoggedHours(student_id=1, staff_id=2, hours=20, status='approved')
+        logged_json = Testlogged.get_json()
+        self.assertEqual(logged_json['student_id'], 1)
+        self.assertEqual(logged_json['staff_id'], 2)
+        self.assertEqual(logged_json['hours'], 20)
+        self.assertEqual(logged_json['status'], 'approved')
+        self.assertIsNotNone(logged_json['timestamp'])
+ 
 
 
 # '''
