@@ -4,6 +4,18 @@
 This is a Flask-based web application that helps tertiary institutions track and reward student participation. The platform captures volunteer or co-curricular hours, validates them through staff approvals, and converts approved time into accolades and leaderboard rankings.
 
 ## Recent Changes (December 2, 2025)
+- **Web UI Implementation**: Implemented comprehensive web interface based on wireframe specifications
+  - Created modern base.html template with purple theme and responsive design
+  - Added Login and Registration pages with Student/Staff role selection
+  - Implemented Student Dashboard with navigation, hours summary, and recent activities
+  - Created My Accolades page showing earned and upcoming milestones
+  - Added Pending Confirmations page for students to view their requests
+  - Implemented My Hours and Activities page with status filters
+  - Created Activity History page with milestone tracking
+  - Added Staff Dashboard with pending requests list
+  - Implemented Log Student Hours form for staff
+  - Created Student Leaderboard with rankings and progress bars
+  - Updated 401 and index pages with new styling
 - Successfully configured the project for Replit environment
 - Updated Python dependencies (upgraded gevent to 24.2.1+ for Python 3.12 compatibility)
 - Fixed model indentation issues in Student and Staff classes
@@ -132,13 +144,36 @@ Custom configuration can be added via `App/custom_config.py` (takes precedence o
 ## Key Features
 1. **Student Hour Tracking**: Students submit hours for approval
 2. **Staff Review Workflow**: Staff can approve/deny requests with automatic hour logging
-3. **Accolades System**: Students earn recognition based on hours
-4. **Leaderboard**: Ranking system based on approved hours
-5. **Activity History**: Track student progress over time
+3. **Accolades System**: Students earn recognition based on hours (10, 25, 50 hour milestones)
+4. **Leaderboard**: Ranking system based on approved hours with progress bars
+5. **Activity History**: Track student progress over time with milestone tracking
 6. **CLI Interface**: Comprehensive command-line tools
-7. **Web Interface**: HTML templates for browsing and administration
-8. **Authentication**: JWT-based auth with cookie/header support
+7. **Web Interface**: Modern responsive UI with purple theme
+8. **Authentication**: JWT-based auth with cookie/header support, role-based access
 9. **Admin Panel**: Flask-Admin integration for data management
+
+## Web Pages
+
+### Public Pages
+- `/login` - User login page
+- `/register` - User registration with Student/Staff role selection
+
+### Student Pages (requires login as student)
+- `/student/dashboard` - Dashboard with hours summary, recent activities, request form
+- `/student/accolades` - Earned accolades and upcoming milestones
+- `/student/confirmations` - Pending and confirmed hour requests
+- `/student/hours` - Activity logs with status filters
+- `/student/history` - Complete activity history with milestone markers
+- `/student/leaderboard` - Student rankings by confirmed hours
+
+### Staff Pages (requires login as staff)
+- `/staff/dashboard` - Dashboard with pending requests overview
+- `/staff/log-hours` - Form to log hours for students directly
+- `/staff/requests` - View and manage pending student requests
+- `/staff/request/<id>` - Detailed view of specific request
+- `/staff/approve/<id>` - Approve a student request (POST)
+- `/staff/deny/<id>` - Deny a student request (POST)
+- `/staff/leaderboard` - Student rankings view
 
 ## Deployment
 The application is configured for Replit deployment using:
