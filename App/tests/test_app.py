@@ -108,10 +108,26 @@ class StudentUnitTests(unittest.TestCase):
         self.assertIn("alice123@gmail.com", rep)
 
     def test_student_get_json(self):
-        newstudent = Student("Alice Smith", "alice123@hmail.com" , "password123")
+        newstudent = Student("Alice Smith", "alice123@gmail.com" , "password123")
         student_json = newstudent.get_json()
         self.assertEqual(student_json['username'], "Alice Smith")
         self.assertEqual(student_json['email'], "alice123@gmail.com")
+        
+    def test_student_get_activity_history(self):
+        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
+        history = newstudent.get_activity_history()
+        self.assertIn('logged_hours', history)
+        self.assertIn('requests', history)
+        
+    def test_add_activity_log(self):
+        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
+        log = newstudent.add_activity_log(staff_id=1, hours=5, status='denied')
+        self.assertEqual(log.student_id, newstudent.student_id) 
+        self.assertEqual(log.staff_id, 1)
+        self.assertEqual(log.hours, 5)
+        self.assertEqual(log.status, 'denied')
+        
+    
 
 class RequestUnitTests(unittest.TestCase):
 
