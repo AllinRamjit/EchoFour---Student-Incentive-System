@@ -9,6 +9,7 @@ from App.controllers.student_controller import (
     fetch_requests,
     generate_leaderboard
 )
+from App.controllers.session_auth import student_required, get_current_user
 from App import db
 
 student_views = Blueprint('student_views', __name__, template_folder='../templates')
@@ -35,12 +36,9 @@ def calculate_milestone_progress(hours, next_milestone):
 
 
 @student_views.route('/student/dashboard', methods=['GET'])
-@jwt_required()
+@student_required
 def student_dashboard():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     confirmed_hours = sum(lh.hours for lh in user.loggedhours if lh.status == 'approved')
     pending_hours = sum(r.hours for r in user.requests if r.status == 'pending')
@@ -67,12 +65,9 @@ def student_dashboard():
 
 
 @student_views.route('/student/request-hours', methods=['POST'])
-@jwt_required()
+@student_required
 def request_hours():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     hours = request.form.get('hours', type=float)
     if not hours or hours <= 0:
@@ -89,12 +84,9 @@ def request_hours():
 
 
 @student_views.route('/student/accolades', methods=['GET'])
-@jwt_required()
+@student_required
 def student_accolades():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     total_hours = sum(lh.hours for lh in user.loggedhours if lh.status == 'approved')
     accolades = fetch_accolades(user.student_id)
@@ -124,12 +116,9 @@ def student_accolades():
 
 
 @student_views.route('/student/confirmations', methods=['GET'])
-@jwt_required()
+@student_required
 def student_confirmations():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     pending_requests = [r for r in user.requests if r.status == 'pending']
     confirmed_requests = [r for r in user.requests if r.status in ['approved', 'denied']]
@@ -148,12 +137,9 @@ def student_confirmations():
 
 
 @student_views.route('/student/hours', methods=['GET'])
-@jwt_required()
+@student_required
 def student_hours():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     filter_status = request.args.get('filter', 'all')
     
@@ -172,12 +158,9 @@ def student_hours():
 
 
 @student_views.route('/student/history', methods=['GET'])
-@jwt_required()
+@student_required
 def student_history():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     try:
         history_data = get_activity_history(user.student_id)
@@ -189,13 +172,8 @@ def student_history():
 
 
 @student_views.route('/student/leaderboard', methods=['GET'])
-@jwt_required()
+@student_required
 def student_leaderboard():
-    user = jwt_current_user
-    if user.role != 'student':
-        flash('Access denied: Students only', 'error')
-        return redirect(url_for('auth_views.login_page'))
-    
     leaderboard_data = generate_leaderboard()
     
     leaderboard = []

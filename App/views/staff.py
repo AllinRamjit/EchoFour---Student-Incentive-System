@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, current_user as jwt_current_user
 from App.models import Student, Request, LoggedHours
 from App.controllers.student_controller import get_all_students_json, fetch_accolades, create_hours_request, generate_leaderboard
 from App.controllers.staff_controller import process_request_approval, process_request_denial, fetch_all_requests
+from App.controllers.session_auth import staff_required, get_current_user
 from App import db
 
 staff_views = Blueprint('staff_views', __name__, template_folder='../templates')
@@ -17,12 +18,9 @@ def get_next_milestone(hours):
 
 
 @staff_views.route('/staff/dashboard', methods=['GET'])
-@jwt_required()
+@staff_required
 def staff_dashboard():
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     pending_requests = fetch_all_requests()
     for req in pending_requests:
@@ -37,12 +35,9 @@ def staff_dashboard():
 
 
 @staff_views.route('/staff/log-hours', methods=['GET', 'POST'])
-@jwt_required()
+@staff_required
 def staff_log_hours():
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     if request.method == 'POST':
         student_id = request.form.get('student_id', type=int)
@@ -66,13 +61,8 @@ def staff_log_hours():
 
 
 @staff_views.route('/staff/requests', methods=['GET'])
-@jwt_required()
+@staff_required
 def staff_requests():
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
-    
     pending_requests = fetch_all_requests()
     for req in pending_requests:
         r = Request.query.get(req['id'])
@@ -86,13 +76,8 @@ def staff_requests():
 
 
 @staff_views.route('/staff/request/<int:request_id>', methods=['GET'])
-@jwt_required()
+@staff_required
 def staff_request_detail(request_id):
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
-    
     req = Request.query.get(request_id)
     if not req:
         flash('Request not found', 'error')
@@ -120,12 +105,9 @@ def staff_request_detail(request_id):
 
 
 @staff_views.route('/staff/approve/<int:request_id>', methods=['POST'])
-@jwt_required()
+@staff_required
 def approve_request(request_id):
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     try:
         result = process_request_approval(user.staff_id, request_id)
@@ -137,12 +119,9 @@ def approve_request(request_id):
 
 
 @staff_views.route('/staff/deny/<int:request_id>', methods=['POST'])
-@jwt_required()
+@staff_required
 def deny_request(request_id):
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
+    user = get_current_user()
     
     try:
         result = process_request_denial(user.staff_id, request_id)
@@ -154,13 +133,8 @@ def deny_request(request_id):
 
 
 @staff_views.route('/staff/leaderboard', methods=['GET'])
-@jwt_required()
+@staff_required
 def staff_leaderboard():
-    user = jwt_current_user
-    if user.role != 'staff':
-        flash('Access denied: Staff only', 'error')
-        return redirect(url_for('auth_views.login_page'))
-    
     leaderboard_data = generate_leaderboard()
     
     leaderboard = []
