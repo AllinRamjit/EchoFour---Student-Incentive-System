@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Activity History - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="welcome-text">Activity History</h1>
+    
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/student/dashboard" class="nav-menu-item">
+                        <span class="material-icons">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="/student/confirmations" class="nav-menu-item">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Confirmations
+                    </a>
+                    <a href="/student/accolades" class="nav-menu-item">
+                        <span class="material-icons">emoji_events</span>
+                        My Accolades
+                    </a>
+                    <a href="/student/hours" class="nav-menu-item">
+                        <span class="material-icons">schedule</span>
+                        My Hours & Activities
+                    </a>
+                    <a href="/student/history" class="nav-menu-item active">
+                        <span class="material-icons">history</span>
+                        View Activity History
+                    </a>
+                    <a href="/student/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Activity Logs</div>
+                
+                {% if history %}
+                    <div class="activity-log">
+                        {% for idx, entry in history %}
+                        <div class="activity-item">
+                            <div class="activity-title">
+                                <span style="background: #6B46C1; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.5rem;">{{ idx }}</span>
+                                {{ entry.hours }} Hours Logged
+                            </div>
+                            <div class="activity-meta">
+                                {{ entry.timestamp[:10] }} | 
+                                <span class="badge badge-{{ entry.status }}">{{ entry.status | capitalize }}</span>
+                                | Cumulative: {{ entry.cumulative_hours }} Hours
+                            </div>
+                            {% if entry.milestones_achieved %}
+                            <div style="margin-top: 0.5rem;">
+                                {% for milestone in entry.milestones_achieved %}
+                                <span style="background: #FAF5FF; color: #6B46C1; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.75rem; margin-right: 0.5rem;">
+                                    🏆 {{ milestone }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No activity history found. Start logging hours to build your history!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

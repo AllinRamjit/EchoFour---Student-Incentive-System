@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Register - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join the Student Incentive System</p>
+        
+        <form method="POST" action="/auth/register">
+            <div class="form-group">
+                <label class="form-label">I am a:</label>
+                <div class="role-selector">
+                    <label class="role-option selected">
+                        <input type="radio" name="role" value="student" checked>
+                        <div class="role-icon">🎓</div>
+                        <div class="role-label">Student</div>
+                    </label>
+                    <label class="role-option">
+                        <input type="radio" name="role" value="staff">
+                        <div class="role-icon">👨‍🏫</div>
+                        <div class="role-label">Staff</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required autocomplete="new-password">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                Register
+            </button>
+        </form>
+        
+        <div class="auth-link">
+            Already have an account? <a href="/login">Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}My Hours & Activities - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="welcome-text">My Hours and Activities</h1>
+    
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/student/dashboard" class="nav-menu-item">
+                        <span class="material-icons">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="/student/confirmations" class="nav-menu-item">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Confirmations
+                    </a>
+                    <a href="/student/accolades" class="nav-menu-item">
+                        <span class="material-icons">emoji_events</span>
+                        My Accolades
+                    </a>
+                    <a href="/student/hours" class="nav-menu-item active">
+                        <span class="material-icons">schedule</span>
+                        My Hours & Activities
+                    </a>
+                    <a href="/student/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Activity Logs</div>
+                
+                <div class="filter-group">
+                    <a href="/student/hours" class="filter-btn {{ 'active' if filter == 'all' else '' }}">All</a>
+                    <a href="/student/hours?filter=approved" class="filter-btn {{ 'active' if filter == 'approved' else '' }}">Confirmed</a>
+                    <a href="/student/hours?filter=pending" class="filter-btn {{ 'active' if filter == 'pending' else '' }}">Pending</a>
+                    <a href="/student/hours?filter=denied" class="filter-btn {{ 'active' if filter == 'denied' else '' }}">Rejected</a>
+                </div>
+                
+                {% if activities %}
+                    <div class="activity-log">
+                        {% for idx, activity in activities %}
+                        <div class="activity-item">
+                            <div class="activity-title">
+                                <span style="background: #6B46C1; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.5rem;">{{ idx }}</span>
+                                {{ activity.hours }} Hours
+                            </div>
+                            <div class="activity-meta">
+                                {{ activity.timestamp.strftime('%Y-%m-%d') }} | 
+                                <span class="badge badge-{{ activity.status }}">{{ activity.status | capitalize }}</span>
+                                | Log ID: {{ activity.id }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No activity logs found</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
