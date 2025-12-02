@@ -14,14 +14,14 @@ class Student(User):
     requests = db.relationship('Request', backref='student', lazy=True, cascade="all, delete-orphan")
 
     #Inheritance setup
-    _mapper_args_ = {
+    __mapper_args__ = {
         "polymorphic_identity": "student"
     }
     #calls parent constructor
-    def _init_(self, username, email, password):
-       super()._init_(username, email, password, role="student")
+    def __init__(self, username, email, password):
+        super().__init__(username, email, password, role="student")
 
-    def _repr_(self):
+    def __repr__(self):
         return f"[Student ID= {str(self.student_id):<3}  Name= {self.username:<10} Email= {self.email}]"
 
     def get_json(self):
@@ -37,9 +37,9 @@ class Student(User):
     def add_activity(self, activity_type, description, points=0):
         activity = activity.Activity(
             student_id=self.student_id,
-        activity_type=activity_type,
-        description=description,
-        points=points
-    )
-    db.session.add(activity)
-    db.session.commit()
+            activity_type=activity_type,
+            description=description,
+            points=points
+        )
+        db.session.add(activity)
+        db.session.commit()
