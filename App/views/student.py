@@ -49,9 +49,11 @@ def student_dashboard():
     all_entries = list(user.loggedhours) + list(user.requests)
     all_entries.sort(key=lambda x: x.timestamp, reverse=True)
     for entry in all_entries[:5]:
+        activity_desc = getattr(entry, 'activity', None) or getattr(entry, 'description', None) or 'Activity'
         recent_activities.append({
             'hours': entry.hours,
             'status': entry.status,
+            'activity': activity_desc,
             'timestamp': entry.timestamp.strftime('%Y-%m-%d %H:%M')
         })
     
@@ -70,12 +72,13 @@ def request_hours():
     user = get_current_user()
     
     hours = request.form.get('hours', type=float)
+    activity = request.form.get('activity', '').strip() or None
     if not hours or hours <= 0:
         flash('Please enter valid hours', 'error')
         return redirect(url_for('student_views.student_dashboard'))
     
     try:
-        create_hours_request(user.student_id, hours)
+        create_hours_request(user.student_id, hours, activity)
         flash(f'Successfully requested {hours} hours!', 'success')
     except Exception as e:
         flash(f'Error creating request: {str(e)}', 'error')

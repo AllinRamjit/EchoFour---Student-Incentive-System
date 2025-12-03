@@ -27,6 +27,7 @@ def staff_dashboard():
         r = Request.query.get(req['id'])
         if r:
             req['timestamp'] = r.timestamp.strftime('%Y-%m-%d %H:%M')
+            req['activity'] = getattr(r, 'activity', None) or 'Community Service'
     
     return render_template('staff/dashboard.html',
         pending_requests=pending_requests,
@@ -42,13 +43,14 @@ def staff_log_hours():
     if request.method == 'POST':
         student_id = request.form.get('student_id', type=int)
         hours = request.form.get('hours', type=float)
+        activity = request.form.get('activity', '').strip() or 'Community Service'
         
         if not student_id or not hours:
             flash('Please fill all fields', 'error')
             return redirect(url_for('staff_views.staff_log_hours'))
         
         try:
-            logged = LoggedHours(student_id=student_id, staff_id=user.staff_id, hours=hours, status='approved')
+            logged = LoggedHours(student_id=student_id, staff_id=user.staff_id, hours=hours, status='approved', activity=activity)
             db.session.add(logged)
             db.session.commit()
             flash(f'Successfully logged {hours} hours!', 'success')
@@ -68,6 +70,7 @@ def staff_requests():
         r = Request.query.get(req['id'])
         if r:
             req['timestamp'] = r.timestamp.strftime('%Y-%m-%d %H:%M')
+            req['activity'] = getattr(r, 'activity', None) or 'Community Service'
     
     return render_template('staff/requests.html',
         pending_requests=pending_requests,
@@ -89,7 +92,8 @@ def staff_request_detail(request_id):
         'student_name': student.username if student else 'Unknown',
         'hours': req.hours,
         'timestamp': req.timestamp.strftime('%Y-%m-%d %H:%M'),
-        'status': req.status
+        'status': req.status,
+        'activity': getattr(req, 'activity', None) or 'Community Service'
     }
     
     pending_requests = fetch_all_requests()
@@ -97,6 +101,7 @@ def staff_request_detail(request_id):
         req_obj = Request.query.get(r['id'])
         if req_obj:
             r['timestamp'] = req_obj.timestamp.strftime('%Y-%m-%d %H:%M')
+            r['activity'] = getattr(req_obj, 'activity', None) or 'Community Service'
     
     return render_template('staff/requests.html',
         pending_requests=pending_requests,

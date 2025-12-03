@@ -16,13 +16,13 @@ def get_approved_hours(student_id): #calculates and returns the total approved h
     total_hours = sum(lh.hours for lh in student.loggedhours if lh.status == 'approved')
     return (student.username,total_hours)
 
-def create_hours_request(student_id,hours): #creates a new hours request for a student
+def create_hours_request(student_id, hours, activity=None): #creates a new hours request for a student
     from App.models import Request
     student = Student.query.get(student_id)
     if not student:
         raise ValueError(f"Student with id {student_id} not found.")
     
-    request = Request(student_id=student.student_id, hours=hours, status='pending')
+    request = Request(student_id=student.student_id, hours=hours, status='pending', activity=activity)
     db.session.add(request)
     db.session.commit()
     return request

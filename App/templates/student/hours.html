@@ -24,7 +24,7 @@
         <div class="card-header">Request Details</div>
         <div style="padding: 1.5rem;">
             <p><strong>Student:</strong> {{ current_user.username }}</p>
-            <p><strong>Activity:</strong> Community Service</p>
+            <p><strong>Activity:</strong> {{ first_activity.activity if first_activity.activity else 'Community Service' }}</p>
             <p><strong>Hours:</strong> {{ first_activity.hours }}</p>
             <p><strong>Date:</strong> {{ first_activity.timestamp.strftime('%Y-%m-%d') }}</p>
             <p><strong>Log ID:</strong> {{ first_activity.id }}</p>
@@ -45,7 +45,7 @@
                     {% endif %}
                 </span>
                 {% if first_activity.status == 'pending' %}
-                <span style="color: #805AD5; font-size: 0.875rem;">Request confirmation</span>
+                <a href="/student/confirmations" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Request confirmation</a>
                 {% endif %}
             </div>
         </div>
@@ -61,7 +61,7 @@
         {% if activities %}
             {% for idx, activity in activities %}
             <div style="padding: 1rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                <span>Activity - {{ activity.hours }} Hours - 
+                <span>{{ activity.activity if activity.activity else 'Activity' }} - {{ activity.hours }} Hours - 
                     {% if activity.status == 'approved' %}
                         <span style="color: #38A169;">✔️ Confirmed</span>
                     {% elif activity.status == 'pending' %}

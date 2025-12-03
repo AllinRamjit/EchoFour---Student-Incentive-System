@@ -3,7 +3,22 @@
 ## Overview
 This is a Flask-based web application that helps tertiary institutions track and reward student participation. The platform captures volunteer or co-curricular hours, validates them through staff approvals, and converts approved time into accolades and leaderboard rankings.
 
-## Recent Changes (December 2, 2025)
+## Recent Changes (December 3, 2025)
+- **UI Redesign**: Updated templates to match new wireframe specifications
+  - Login page: Simplified design with "STUDENT INCENTIVE SYSTEM" title, "Forgot Password?" link
+  - Register page: Student/Teacher toggle selector at top, simplified inputs
+  - Staff Dashboard: Simplified navigation layout, pending requests with Activity descriptions
+  - Log Student Hours: Added Activity Description textarea field (now persists to database)
+  - Pending Student Requests: Added Additional Notes section with Activity display
+  - Student Dashboard: Text-only navigation links, Hours Summary format updated
+  - My Accolades: Earned/Upcoming sections with trophy icons
+  - Logged Hours: Real activity data display, status icons (✔️/🔄/❌), Request confirmation button
+  - Activity History: Three-section layout (Hours Earned, Milestones, Accolades)
+  - Leaderboard: Medal icons (🥇🥈🥉), percentage to next milestone display
+- **Model Updates**: Added activity field to LoggedHours and Request models
+- **Data Flow**: Activity descriptions now properly saved and displayed across all pages
+
+## Previous Changes (December 2, 2025)
 - **Web UI Implementation**: Implemented comprehensive web interface based on wireframe specifications
   - Created modern base.html template with purple theme and responsive design
   - Added Login and Registration pages with Student/Staff role selection
