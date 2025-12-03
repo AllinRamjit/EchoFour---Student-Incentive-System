@@ -35,6 +35,19 @@ class User(db.Model):
         """Check hashed password."""
         return check_password_hash(self.password, password)
     
+    def login(username,password):
+        user= User.query.filter_by(username=username).first()
+        if user and user.check_password(password):
+            return user
+        return None
+    
+    def change_password(self, old_password, new_password):
+        if self.check_password(old_password):
+            self.set_password(new_password)
+            db.session.commit()
+            return True
+        return False
+    
 
 
 

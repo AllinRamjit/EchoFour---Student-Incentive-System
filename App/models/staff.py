@@ -1,29 +1,24 @@
 from App.database import db
 from .user import User
 
+
 class Staff(User):
+    __tablename__ = 'staff'
 
-_tablename_ = "staff"
-staff_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), primary_key=True)
+    staff_id = db.Column(db.Integer, db.ForeignKey('users.user_id'), primary_key=True)
+    staffID = db.Column(db.String(50), unique=True, nullable=True)
 
-#relationaship to LoggedHours
-loggedhours = db.relationship('LoggedHours', backref='staff', lazy=True, cascade="all, delete-orphan")
+    __mapper_args__ = {
+        'polymorphic_identity': 'staff',
+    }
 
-#Inheritance, Staff is a child of User
-_mapper_args_ = {
-"polymorphic_identity": "staff"
-}
-#calls parent constructor
-def _init_(self, username, email, password):
-super().__init__(username, email, password, role="staff")
+    def __init__(self, username, email, password):
+        super().__init__(username, email, password, role='staff')
 
-def _repr_(self):
-
-return f"[Staff ID= {str(self.staff_id):<3} Name= {self.username:<10} Email= {self.email}]"
-
-def get_json(self):
-return{
-'staff_id': self.staff_id,
-'username': self.username,
-'email': self.email
-}
+    def to_dict(self):
+        user_dict = self.get_json()
+        user_dict.update({
+            'staff_id': getattr(self, 'staff_id', None),
+            'staffID': self.staffID,
+        })
+        return user_dict
