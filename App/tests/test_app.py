@@ -225,44 +225,74 @@ class StaffIntegrationTests(unittest.TestCase):
         # ensure staff persisted
         fetched = Staff.query.get(staff.staff_id)
         assert fetched is not None
+        assert fetched.email == "marcus@example.com"
 
     def test_request_fetch(self):
         # create a student and a pending request
         student = Student.create_student("tariq", "tariq@example.com", "studpass")
+        db.session.add(student)
+        db.session.commit()
+
         req = Request(student_id=student.student_id, hours=3.5, status='pending')
         db.session.add(req)
         db.session.commit()
 
         requests = fetch_all_requests()
         # should include request with student name 'tariq'
+        assert len(requests) >= 1
         assert any(r['student_name'] == 'tariq' and r['hours'] == 3.5 for r in requests)
 
     def test_hours_approval(self):
         # prepare staff, student and request
         staff = register_staff("carmichael", "carm@example.com", "staffpass")
         student = Student.create_student("niara", "niara@example.com", "studpass")
+        db.session.add(student)
+        db.session.commit()
+
         req = Request(student_id=student.student_id, hours=2.0, status='pending')
         db.session.add(req)
         db.session.commit()
 
         result = process_request_approval(staff.staff_id, req.id)
-        # verify logged hours created and request status updated
-        logged = result.get('logged_hours')
+        
+        # Validating result structure
+        assert 'request' in result
+        assert 'logged_hours' in result
+        assert 'student_name' in result
+        assert 'staff_name' in result
+
+        # Validating request updated
+        assert result['request'].status == 'approved'
+
+        # Validating logged hours created
+        logged = result['logged_hours']
         assert logged is not None
         assert logged.hours == 2.0
-        assert result['request'].status == 'approved'
+        assert logged.student_id == student.student_id
+        assert logged.staff_id == staff.staff_id
+        assert logged.status == 'approved'
 
     def test_hours_denial(self):
         # prepare staff, student and request
         staff = register_staff("maritza", "maritza@example.com", "staffpass")
         student = Student.create_student("jabari", "jabari@example.com", "studpass")
+        db.session.add(student)
+        db.session.commit()
+
         req = Request(student_id=student.student_id, hours=1.0, status='pending')
         db.session.add(req)
         db.session.commit()
 
         result = process_request_denial(staff.staff_id, req.id)
+        
+        # Validating response structure
+        assert 'request' in result
+        assert 'denial_successful' in result
+
         assert result['denial_successful'] is True
         assert result['request'].status == 'denied'
+        assert result['student_name'] == "jabari"
+        assert result['staff_name'] == "maritza"
 
 
 class StudentIntegrationTests(unittest.TestCase):
@@ -272,6 +302,7 @@ class StudentIntegrationTests(unittest.TestCase):
         assert student.username == "junior"
         fetched = Student.query.get(student.student_id)
         assert fetched is not None
+        assert fetched.email == "junior@example.com"
 
     def test_request_hours_confirmation(self):
         student = Student.create_student("amara", "amara@example.com", "pass")
@@ -325,3 +356,30 @@ class StudentIntegrationTests(unittest.TestCase):
         assert 'zara' in names and 'omar' in names and 'leon' in names
         # assert relative ordering: zara (10) > omar (5) > leon (1)
         assert names.index('zara') < names.index('omar') < names.index('leon')
+
+    def test_get_activity_history(self):
+        student = register_student("dana", "dana@example.com", "pw")
+
+        # Add logged hours
+        lh1 = LoggedHours(student_id=student.student_id, staff_id=None, hours=4.0, status='approved')
+        lh2 = LoggedHours(student_id=student.student_id, staff_id=None, hours=6.0, status='approved')
+        lh3 = LoggedHours(student_id=student.student_id, staff_id=None, hours=15.0, status='approved')
+        db.session.add_all([lh1, lh2, lh3])
+        db.session.commit()
+
+        history = get_activity_history(student.student_id)
+
+        # Should return entries equal to approved logs
+        assert len(history) == 3
+
+        # Check cumulative hours and milestone triggers
+        assert history[0]['cumulative_hours'] == 4.0
+        assert history[0]['milestones_achieved'] == []
+
+        assert history[1]['cumulative_hours'] == 10.0
+        assert '10 Hours Milestone' in history[1]['milestones_achieved']
+
+        assert history[2]['cumulative_hours'] == 25.0
+        assert '25 Hours Milestone' in history[2]['milestones_achieved']
+        
+        
