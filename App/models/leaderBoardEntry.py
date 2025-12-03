@@ -28,7 +28,14 @@ class LeaderBoardEntry(db.Model):
     
     def updateEntry(self, student):
         self.totalHours = student.totalHours
-        self.totalAccolades = len(student.viewAccolades())
+        # Use the ORM relationship `accolades` to compute total accolades.
+        # Business rules (which accolades qualify) belong to controllers; here
+        # we only summarise the related accolade objects attached to the student.
+        try:
+            self.totalAccolades = len(student.accolades) if student.accolades is not None else 0
+        except Exception:
+            # Fallback in case `student` is not a model instance or relationship missing
+            self.totalAccolades = 0
     
     def getRank(self):
         return self.rank
