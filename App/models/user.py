@@ -35,6 +35,30 @@ class User(db.Model):
         """Check hashed password."""
         return check_password_hash(self.password, password)
     
+    @staticmethod
+    def login(username, password):
+        # Business logic for authentication lives in `App.controllers.auth.login`.
+        # Keep a thin compatibility wrapper here so existing call sites
+        # can continue to call `User.login(...)`.
+        # Lightweight compatibility: return the User object when credentials
+        # are correct. Controller `login` may return tokens for HTTP flows.
+        try:
+            result = db.session.execute(db.select(User).filter_by(username=username))
+            user = result.scalar_one_or_none()
+            if user and user.check_password(password):
+                return user
+            return None
+        except Exception:
+            return None
+
+    def change_password(self, old_password, new_password):
+        # Only update the in-memory password here; committing the
+        # session should be the responsibility of the controller.
+        if self.check_password(old_password):
+            self.set_password(new_password)
+            return True
+        return False
+    
 
 
 
