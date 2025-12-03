@@ -4,83 +4,69 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="welcome-text">Pending Student Requests</h1>
+    <div class="page-header">
+        <h1 class="page-title">PENDING STUDENT REQUESTS</h1>
+    </div>
     
-    <div class="two-column">
-        <div class="sidebar">
-            <div class="card">
-                <div class="card-header">Navigation</div>
-                <nav class="nav-menu">
-                    <a href="/staff/dashboard" class="nav-menu-item">
-                        <span class="material-icons">dashboard</span>
-                        Dashboard
-                    </a>
-                    <a href="/staff/log-hours" class="nav-menu-item">
-                        <span class="material-icons">add_circle</span>
-                        Log Hours for Student
-                    </a>
-                    <a href="/staff/requests" class="nav-menu-item active">
-                        <span class="material-icons">pending_actions</span>
-                        Pending Student Requests
-                    </a>
-                    <a href="/staff/leaderboard" class="nav-menu-item">
-                        <span class="material-icons">leaderboard</span>
-                        View Leaderboard
-                    </a>
-                </nav>
-            </div>
-        </div>
-        
-        <div class="main-content">
-            {% if selected_request %}
-            <div class="card">
-                <div class="card-header">Request Details</div>
-                <div style="margin-bottom: 1rem;">
-                    <p><strong>Student:</strong> {{ selected_request.student_name }}</p>
-                    <p><strong>Hours:</strong> {{ selected_request.hours }}</p>
-                    <p><strong>Date:</strong> {{ selected_request.timestamp }}</p>
-                    <p><strong>Request ID:</strong> {{ selected_request.id }}</p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; {% if category == 'error' %}background: #FED7D7; color: #C53030;{% else %}background: #C6F6D5; color: #276749;{% endif %}">
+                    {{ message }}
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Additional Notes:</label>
-                    <textarea class="form-control" rows="3" placeholder="Add any notes here..."></textarea>
-                </div>
-                <div style="display: flex; gap: 1rem;">
-                    <form method="POST" action="/staff/approve/{{ selected_request.id }}">
-                        <button type="submit" class="btn btn-success">Confirm</button>
-                    </form>
-                    <form method="POST" action="/staff/deny/{{ selected_request.id }}">
-                        <button type="submit" class="btn btn-danger">Reject</button>
-                    </form>
-                </div>
-            </div>
-            {% endif %}
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    {% if selected_request %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">Request Details</div>
+        <div style="padding: 1.5rem;">
+            <p><strong>Student:</strong> {{ selected_request.student_name }}</p>
+            <p><strong>Activity:</strong> {{ selected_request.activity if selected_request.activity else 'Community Service' }}</p>
+            <p><strong>Hours:</strong> {{ selected_request.hours }}</p>
+            <p><strong>Date:</strong> {{ selected_request.timestamp }}</p>
+            <p><strong>Log ID:</strong> {{ selected_request.id }}</p>
             
-            <div class="card">
-                <div class="card-header">All Pending Requests</div>
-                {% if pending_requests %}
-                    {% for request in pending_requests %}
-                    <div class="request-item">
-                        <div class="request-info">
-                            <div class="request-student">Student: {{ request.student_name }}</div>
-                            <div class="request-details">{{ request.hours }} Hours | {{ request.timestamp }}</div>
-                        </div>
-                        <div class="request-actions">
-                            <form method="POST" action="/staff/approve/{{ request.id }}" style="display: inline;">
-                                <button type="submit" class="btn btn-success">Approve</button>
-                            </form>
-                            <form method="POST" action="/staff/deny/{{ request.id }}" style="display: inline;">
-                                <button type="submit" class="btn btn-danger">Reject</button>
-                            </form>
-                            <a href="/staff/request/{{ request.id }}" class="btn btn-secondary">View Details</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="color: #718096; text-align: center; padding: 2rem;">No pending requests</p>
-                {% endif %}
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Additional Notes:</label>
+                <textarea class="form-control" rows="3" placeholder="_______________________________________________________________" style="border-bottom: 1px solid #ccc;"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <form method="POST" action="/staff/approve/{{ selected_request.id }}" style="flex: 1;">
+                    <button type="submit" class="btn btn-success" style="width: 100%;">Confirm</button>
+                </form>
+                <form method="POST" action="/staff/deny/{{ selected_request.id }}" style="flex: 1;">
+                    <button type="submit" class="btn btn-danger" style="width: 100%;">Reject</button>
+                </form>
             </div>
         </div>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <div class="card-header">Pending Student Requests</div>
+        {% if pending_requests %}
+            {% for request in pending_requests %}
+            <div class="request-item" style="padding: 1rem; border-bottom: 1px solid #E2E8F0;">
+                <div class="request-info" style="margin-bottom: 0.75rem;">
+                    <strong>Student: {{ request.student_name }}</strong> - {{ request.hours }} Hours - {{ request.activity if request.activity else 'Activity' }}
+                </div>
+                <div class="request-actions" style="display: flex; gap: 0.5rem;">
+                    <form method="POST" action="/staff/approve/{{ request.id }}" style="display: inline;">
+                        <button type="submit" class="btn btn-success" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Approve</button>
+                    </form>
+                    <form method="POST" action="/staff/deny/{{ request.id }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Reject</button>
+                    </form>
+                    <a href="/staff/request/{{ request.id }}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">View Details</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #718096; text-align: center; padding: 2rem;">No pending requests</p>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

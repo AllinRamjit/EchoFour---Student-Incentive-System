@@ -4,31 +4,32 @@
 
 {% block content %}
 <div class="container">
-    <div class="text-center mb-3">
-        <h1 class="welcome-text">Student Leaderboard</h1>
-        <p style="color: #718096;">Ranked by Confirmed Community Service Hours</p>
+    <div class="page-header">
+        <h1 class="page-title">STUDENT LEADERBOARD</h1>
     </div>
     
-    <div class="card" style="max-width: 700px; margin: 0 auto;">
+    <p style="text-align: center; color: #718096; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 0.05em;">
+        RANKED BY CONFIRMED COMMUNITY SERVICE HOURS
+    </p>
+    
+    <div style="max-width: 500px; margin: 0 auto;">
         {% if leaderboard %}
             {% for entry in leaderboard %}
-            <div class="leaderboard-item" style="{% if loop.index == 1 %}background: linear-gradient(135deg, #FFF9DB 0%, #FEF3C7 100%); border: 1px solid #F6E05E;{% elif loop.index == 2 %}background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%); border: 1px solid #CBD5E0;{% elif loop.index == 3 %}background: linear-gradient(135deg, #FFFAF0 0%, #FEEBC8 100%); border: 1px solid #F6AD55;{% endif %}">
-                <div class="leaderboard-medal">
+            <div style="text-align: center; padding: 1.5rem; margin-bottom: 1rem; background: white; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); {% if loop.index == 1 %}border: 2px solid #F6E05E;{% elif loop.index == 2 %}border: 2px solid #CBD5E0;{% elif loop.index == 3 %}border: 2px solid #F6AD55;{% endif %}">
+                <div style="font-size: 0.875rem; color: #718096; margin-bottom: 0.5rem;">{{ loop.index }}</div>
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">
                     {% if loop.index == 1 %}🥇
                     {% elif loop.index == 2 %}🥈
                     {% elif loop.index == 3 %}🥉
-                    {% else %}<span class="leaderboard-rank">{{ loop.index }}</span>
+                    {% else %}🏅
                     {% endif %}
                 </div>
-                <div style="flex: 1;">
-                    <div class="leaderboard-name">{{ entry.name }}</div>
-                    <div class="leaderboard-hours">{{ entry.hours }} Hours | {{ entry.accolades|length }} Accolades</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: #2D3748; margin-bottom: 0.25rem;">{{ entry.name }}</div>
+                <div style="color: #718096; margin-bottom: 0.75rem;">
+                    {{ entry.hours }} Hours | {% if entry.accolades %}{{ entry.accolades|join(', ') }}{% else %}No accolades{% endif %}
                 </div>
-                <div class="leaderboard-progress">
-                    <div style="font-size: 0.875rem; color: #718096;">{{ entry.milestone_progress }}% to next milestone</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ entry.milestone_progress }}%;"></div>
-                    </div>
+                <div style="color: #805AD5; font-size: 0.875rem;">
+                    {{ 100 - entry.milestone_progress }}% to next milestone
                 </div>
             </div>
             {% endfor %}
@@ -37,7 +38,7 @@
         {% endif %}
     </div>
     
-    <div class="text-center mt-3">
+    <div style="text-align: center; margin-top: 2rem;">
         {% if is_authenticated and current_user %}
             {% if current_user.role == 'student' %}
                 <a href="/student/dashboard" class="btn btn-secondary">Back to Dashboard</a>

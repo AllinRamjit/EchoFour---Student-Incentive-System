@@ -5,49 +5,61 @@
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
-        <h1 class="auth-title">Create Account</h1>
-        <p class="auth-subtitle">Join the Student Incentive System</p>
+        <h1 class="auth-title">STUDENT INCENTIVE SYSTEM</h1>
         
-        <form method="POST" action="/auth/register">
-            <div class="form-group">
-                <label class="form-label">I am a:</label>
-                <div class="role-selector">
-                    <label class="role-option selected">
-                        <input type="radio" name="role" value="student" checked>
-                        <div class="role-icon">🎓</div>
-                        <div class="role-label">Student</div>
-                    </label>
-                    <label class="role-option">
-                        <input type="radio" name="role" value="staff">
-                        <div class="role-icon">👨‍🏫</div>
-                        <div class="role-label">Staff</div>
-                    </label>
-                </div>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; {% if category == 'error' %}background: #FED7D7; color: #C53030;{% else %}background: #C6F6D5; color: #276749;{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="/auth/register" class="auth-form">
+            <div class="role-toggle" style="display: flex; margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden; border: 2px solid #805AD5;">
+                <label class="role-toggle-option" style="flex: 1; text-align: center; padding: 0.75rem; cursor: pointer; background: #805AD5; color: white; transition: all 0.2s;">
+                    <input type="radio" name="role" value="student" checked style="display: none;">
+                    Student
+                </label>
+                <label class="role-toggle-option" style="flex: 1; text-align: center; padding: 0.75rem; cursor: pointer; background: white; color: #805AD5; transition: all 0.2s;">
+                    <input type="radio" name="role" value="staff" style="display: none;">
+                    Teacher
+                </label>
             </div>
             
             <div class="form-group">
-                <label class="form-label" for="username">Username</label>
-                <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required>
+                <input type="text" id="username" name="username" class="form-control" placeholder="<Username>" required>
             </div>
             
             <div class="form-group">
-                <label class="form-label" for="email">Email</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
+                <input type="email" id="email" name="email" class="form-control" placeholder="<Email>" required>
             </div>
             
             <div class="form-group">
-                <label class="form-label" for="password">Password</label>
-                <input type="password" id="password" name="password" class="form-control" placeholder="Create a password" required autocomplete="new-password">
+                <input type="password" id="password" name="password" class="form-control" placeholder="<Password>" required>
             </div>
             
-            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">
-                Register
-            </button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Register</button>
         </form>
         
-        <div class="auth-link">
-            Already have an account? <a href="/login">Login</a>
-        </div>
+        <p class="auth-footer" style="text-align: center; margin-top: 1.5rem; color: #718096;">
+            Already have an account? <a href="/login" style="color: #805AD5; text-decoration: none;">Login</a>
+        </p>
     </div>
 </div>
+
+<script>
+document.querySelectorAll('.role-toggle-option').forEach(option => {
+    option.addEventListener('click', function() {
+        document.querySelectorAll('.role-toggle-option').forEach(opt => {
+            opt.style.background = 'white';
+            opt.style.color = '#805AD5';
+        });
+        this.style.background = '#805AD5';
+        this.style.color = 'white';
+    });
+});
+</script>
 {% endblock %}
