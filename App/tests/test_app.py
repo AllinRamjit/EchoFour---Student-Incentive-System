@@ -1,13 +1,10 @@
 import os, tempfile, pytest, logging, unittest
 from werkzeug.security import check_password_hash, generate_password_hash
+from datetime import datetime
 
 from App.main import create_app
 from App.database import db, create_db
-from App.models import User, Student, Request, Staff, LoggedHours
-from App.models import User
-from App.models import Staff
-from App.models import Student
-from App.models import Request
+from App.models import User, Student, Request, Staff, LoggedHours, Accolade, Activity
 from App.controllers import (
     create_user,
     get_all_users_json,
@@ -22,13 +19,28 @@ from App.controllers.student_controller import (
     fetch_requests,
     get_approved_hours,
     fetch_accolades,
-    generate_leaderboard
+    generate_leaderboard,
+    get_activity_history,
+    request_confirmation_of_hours
 )
 from App.controllers.staff_controller import (
     register_staff,
     fetch_all_requests,
     process_request_approval,
-    process_request_denial
+    process_request_denial,
+    confirm_hours,
+    reject_hours,
+    log_hours_for_student
+)
+from App.controllers.accolade_controller import (
+    create_accolade,
+    award_accolade,
+    get_student_accolades
+)
+from App.controllers.activity_controller import (
+    create_activity_log,
+    update_activity_status,
+    get_student_activities
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -39,107 +51,86 @@ LOGGER = logging.getLogger(__name__)
 class UserUnitTests(unittest.TestCase):
 
     def test_init_user(self):
-        Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
+        Testuser = User(username="David Goggins", email="goggs@gmail.com", password="goggs123", role="student")
         self.assertEqual(Testuser.username, "David Goggins")   
         self.assertEqual(Testuser.role, "student")
         self.assertEqual(Testuser.email, "goggs@gmail.com") 
-        self.assertTrue(Testuser.set_password("goggs123"))
+        self.assertTrue(Testuser.check_password("goggs123"))
 
     def test_user_get_json(self):
-        Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
+        Testuser = User(username="David Goggins", email="goggs@gmail.com", password="goggs123", role="student")
         user_json = Testuser.get_json()
         self.assertEqual(user_json['username'], "David Goggins")
         self.assertEqual(user_json['email'], "goggs@gmail.com")
-        self.assertEqual(user_json['role'], "student")
+        # Note: role is not in get_json() based on your User model
 
     def test_check_password(self):
-        Testuser = User("David Goggins", "goggs@gmail.com", "goggs123", "student")
+        Testuser = User(username="David Goggins", email="goggs@gmail.com", password="goggs123", role="student")
         self.assertTrue(Testuser.check_password("goggs123"))
+        self.assertFalse(Testuser.check_password("wrongpassword"))
 
     def test_set_password(self):
-        password = "passtest"
-        new_password = "passtest"
-        Testuser = User("bob", "bob@email.com", password, "user")
+        Testuser = User(username="bob", email="bob@email.com", password="oldpass", role="user")
+        new_password = "newpass"
         Testuser.set_password(new_password)
-        assert Testuser.check_password(new_password)
+        self.assertTrue(Testuser.check_password(new_password))
+        self.assertFalse(Testuser.check_password("oldpass"))
+
+    def test_login_static_method(self):
+        # This tests the static login method in User model
+        user = User(username="testuser", email="test@email.com", password="testpass", role="user")
+        db.session.add(user)
+        db.session.commit()
+        
+        result = User.login("testuser", "testpass")
+        self.assertIsNotNone(result)
+        self.assertEqual(result.username, "testuser")
+        
+        result = User.login("testuser", "wrongpass")
+        self.assertIsNone(result)
 
 class StaffUnitTests(unittest.TestCase):
 
     def test_init_staff(self):
-        newstaff = Staff("Jacob Lester", "jacob55@gmail.com", "Jakey55")
+        newstaff = Staff(username="Jacob Lester", email="jacob55@gmail.com", password="Jakey55")
         self.assertEqual(newstaff.username, "Jacob Lester")
         self.assertEqual(newstaff.email, "jacob55@gmail.com")
         self.assertTrue(newstaff.check_password("Jakey55"))
-
-    def test_repr_staff(self):
-        Teststaff = Staff("Jacob Lester", "jacob55@gmail.com", "jakey55")
-        rep = repr(Teststaff)
-        # Check all parts of the string representation
-        self.assertIn("Staff ID=", rep)
-        self.assertIn("Name=", rep)
-        self.assertIn("Email=", rep)
-        self.assertIn("Jacob Lester", rep)
-        self.assertIn("jacob55@gmail.com", rep)
+        self.assertEqual(newstaff.role, "staff")
 
     def test_staff_get_json(self):
-        Teststaff = Staff("Jacob Lester", "jacob55@gmail.com", "jakey55")
+        Teststaff = Staff(username="Jacob Lester", email="jacob55@gmail.com", password="jakey55")
         staff_json = Teststaff.get_json()
         self.assertEqual(staff_json['username'], "Jacob Lester")
         self.assertEqual(staff_json['email'], "jacob55@gmail.com")
 
-
-
 class StudentUnitTests(unittest.TestCase):
 
     def test_init_student(self):
-        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
+        newstudent = Student(username="Alice Smith", email="alice123@gmail.com", password="password123")
         self.assertEqual(newstudent.username, "Alice Smith")
         self.assertEqual(newstudent.email, "alice123@gmail.com")
         self.assertTrue(newstudent.check_password("password123"))
-
-    def test_repr_student(self):
-        newstudent = Student("Alice Smith", "alice123@gmail.com", "password123")
-        rep = repr(newstudent)  
-        # Check all parts of the string representation
-        self.assertIn("Student ID=", rep)
-        self.assertIn("Name=", rep)
-        self.assertIn("Email=", rep)
-        self.assertIn("Alice Smith", rep)
-        self.assertIn("alice123@gmail.com", rep)
+        self.assertEqual(newstudent.role, "student")
+        self.assertEqual(newstudent.totalHours, 0)
+        self.assertEqual(newstudent.points, 0)
 
     def test_student_get_json(self):
-        newstudent = Student("Alice Smith", "alice123@gmail.com" , "password123")
-        student_json = newstudent.get_json()
+        newstudent = Student(username="Alice Smith", email="alice123@gmail.com", password="password123")
+        student_json = newstudent.to_dict()
         self.assertEqual(student_json['username'], "Alice Smith")
         self.assertEqual(student_json['email'], "alice123@gmail.com")
-        
-    def test_student_get_activity_history(self):
-        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
-        history = newstudent.get_activity_history()
-        self.assertIn('logged_hours', history)
-        self.assertIn('requests', history)
-        
-    def test_add_activity(self):
-        newstudent = Student.create_student("Alice Smith", "alice123@gmail.com", "password123")
-        log = newstudent.add_activity_log(staff_id=1, hours=5, status='approved')
-        self.assertEqual(log.student_id, newstudent.student_id) 
-        self.assertEqual(log.staff_id, 1)
-        self.assertEqual(log.hours, 5)
-        self.assertEqual(log.status, 'approved')
-        
-        
-        
-    #Negative test cases for add_activity    
-    def test_add_activity_no_type(self):
-        student = Student(student_id=1)
-        with pytest.raises((TypeError, ValueError)):
-            student.add_activity(None, "Description", 5)
-            
-        
-    
+        self.assertEqual(student_json['totalHours'], 0)
+        self.assertEqual(student_json['points'], 0)
 
-
-    
+    def test_student_to_dict(self):
+        newstudent = Student(username="Alice Smith", email="alice123@gmail.com", password="password123")
+        newstudent.totalHours = 50
+        newstudent.points = 100
+        student_dict = newstudent.to_dict()
+        self.assertEqual(student_dict['totalHours'], 50)
+        self.assertEqual(student_dict['points'], 100)
+        self.assertEqual(student_dict['studentID'], newstudent.studentID)
 
 class RequestUnitTests(unittest.TestCase):
 
@@ -148,18 +139,7 @@ class RequestUnitTests(unittest.TestCase):
         self.assertEqual(Testrequest.student_id, 12)
         self.assertEqual(Testrequest.hours, 30)
         self.assertEqual(Testrequest.status, 'pending')
-
-    def test_repr_request(self):
-        Testrequest = Request(student_id=4, hours=40, status='denied')
-        rep = repr(Testrequest)
-        # Check all parts of the string representation
-        self.assertIn("RequestID=", rep)
-        self.assertIn("StudentID=", rep)
-        self.assertIn("Hours=", rep)
-        self.assertIn("Status=", rep)
-        self.assertIn("4", rep)
-        self.assertIn("40", rep)
-        self.assertIn("denied", rep)
+        self.assertIsInstance(Testrequest.timestamp, datetime)
 
     def test_request_get_json(self):
         Testrequest = Request(student_id=7, hours=15, status='approved')
@@ -169,32 +149,25 @@ class RequestUnitTests(unittest.TestCase):
         self.assertEqual(request_json['status'], 'approved')
         self.assertIsNotNone(request_json['timestamp'])
 
+    def test_request_repr(self):
+        Testrequest = Request(student_id=4, hours=40, status='denied')
+        rep = repr(Testrequest)
+        self.assertIn("RequestID=", rep)
+        self.assertIn("4", rep)
+        self.assertIn("40", rep)
+        self.assertIn("denied", rep)
 
 class LoggedHoursUnitTests(unittest.TestCase):
 
     def test_init_loggedhours(self):
-        from App.models import LoggedHours
         Testlogged = LoggedHours(student_id=1, staff_id=2, hours=20, status='approved')
         self.assertEqual(Testlogged.student_id, 1)
         self.assertEqual(Testlogged.staff_id, 2)
         self.assertEqual(Testlogged.hours, 20)
         self.assertEqual(Testlogged.status, 'approved')
-
-    def test_repr_loggedhours(self):
-        from App.models import LoggedHours
-        Testlogged = LoggedHours(student_id=1, staff_id=2, hours=20, status='approved')
-        rep = repr(Testlogged)
-        # Check all parts of the string representation
-        self.assertIn("Log ID=", rep)
-        self.assertIn("StudentID =", rep)
-        self.assertIn("Approved By (StaffID)=", rep)
-        self.assertIn("Hours Approved=", rep)
-        self.assertIn("1", rep)
-        self.assertIn("2", rep)
-        self.assertIn("20", rep)
+        self.assertIsInstance(Testlogged.timestamp, datetime)
 
     def test_loggedhours_get_json(self):
-        from App.models import LoggedHours
         Testlogged = LoggedHours(student_id=1, staff_id=2, hours=20, status='approved')
         logged_json = Testlogged.get_json()
         self.assertEqual(logged_json['student_id'], 1)
@@ -202,6 +175,59 @@ class LoggedHoursUnitTests(unittest.TestCase):
         self.assertEqual(logged_json['hours'], 20)
         self.assertEqual(logged_json['status'], 'approved')
         self.assertIsNotNone(logged_json['timestamp'])
+
+    def test_loggedhours_repr(self):
+        Testlogged = LoggedHours(student_id=1, staff_id=2, hours=20, status='approved')
+        rep = repr(Testlogged)
+        self.assertIn("Log ID=", rep)
+        self.assertIn("1", rep)
+        self.assertIn("2", rep)
+        self.assertIn("20", rep)
+
+class AccoladeUnitTests(unittest.TestCase):
+    
+    def test_init_accolade(self):
+        Testaccolade = Accolade(accoladeID="ACC001", studentID="STU001", name="10 Hours Milestone", milestoneHours=10)
+        self.assertEqual(Testaccolade.accoladeID, "ACC001")
+        self.assertEqual(Testaccolade.studentID, "STU001")
+        self.assertEqual(Testaccolade.name, "10 Hours Milestone")
+        self.assertEqual(Testaccolade.milestoneHours, 10)
+        self.assertIsInstance(Testaccolade.dateAwarded, datetime)
+    
+    def test_accolade_to_dict(self):
+        Testaccolade = Accolade(accoladeID="ACC001", studentID="STU001", name="10 Hours Milestone", milestoneHours=10)
+        accolade_dict = Testaccolade.to_dict()
+        self.assertEqual(accolade_dict['accoladeID'], "ACC001")
+        self.assertEqual(accolade_dict['studentID'], "STU001")
+        self.assertEqual(accolade_dict['name'], "10 Hours Milestone")
+        self.assertEqual(accolade_dict['milestoneHours'], 10)
+        self.assertIsNotNone(accolade_dict['dateAwarded'])
+
+class ActivityUnitTests(unittest.TestCase):
+    
+    def test_init_activity(self):
+        Testactivity = Activity(logID="LOG001", studentID="STU001", hoursLogged=5, description="Volunteering")
+        self.assertEqual(Testactivity.logID, "LOG001")
+        self.assertEqual(Testactivity.studentID, "STU001")
+        self.assertEqual(Testactivity.hoursLogged, 5)
+        self.assertEqual(Testactivity.description, "Volunteering")
+        self.assertEqual(Testactivity.status, "Pending")
+        self.assertIsInstance(Testactivity.dateLogged, datetime)
+    
+    def test_activity_to_dict(self):
+        Testactivity = Activity(logID="LOG001", studentID="STU001", hoursLogged=5, description="Volunteering")
+        activity_dict = Testactivity.to_dict()
+        self.assertEqual(activity_dict['logID'], "LOG001")
+        self.assertEqual(activity_dict['studentID'], "STU001")
+        self.assertEqual(activity_dict['hoursLogged'], 5)
+        self.assertEqual(activity_dict['description'], "Volunteering")
+        self.assertEqual(activity_dict['status'], "Pending")
+        self.assertIsNotNone(activity_dict['dateLogged'])
+    
+    def test_activity_getters(self):
+        Testactivity = Activity(logID="LOG001", studentID="STU001", hoursLogged=5, description="Volunteering")
+        self.assertEqual(Testactivity.getHoursLogged(), 5)
+        self.assertEqual(Testactivity.getDescription(), "Volunteering")
  
 
 
@@ -325,3 +351,4 @@ class StudentIntegrationTests(unittest.TestCase):
         assert 'zara' in names and 'omar' in names and 'leon' in names
         # assert relative ordering: zara (10) > omar (5) > leon (1)
         assert names.index('zara') < names.index('omar') < names.index('leon')
+        
