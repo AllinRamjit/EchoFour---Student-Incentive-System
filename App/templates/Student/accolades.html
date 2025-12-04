@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}My Accolades - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">MY ACCOLADES</h1>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 1.5rem;">
+        <p style="color: #4A5568; margin-bottom: 0.25rem;"><strong>Student: {{ current_user.username }}</strong></p>
+        <p style="color: #718096;">Total Confirmed Hours: {{ total_hours }}</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">Earned Accolades</div>
+        {% if accolades %}
+            {% for accolade in accolades %}
+            <div style="padding: 1.5rem; border-bottom: 1px solid #E2E8F0;">
+                <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                    <span style="font-size: 2rem;">🏆</span>
+                    <div>
+                        <h3 style="margin: 0 0 0.5rem 0; color: #2D3748;">{{ accolade }}</h3>
+                        <p style="margin: 0 0 0.25rem 0; color: #718096; font-size: 0.875rem;">Date Awarded: Achievement Unlocked!</p>
+                        <p style="margin: 0; color: #718096; font-size: 0.875rem;">Community Service</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #718096; text-align: center; padding: 2rem;">No accolades earned yet. Keep logging hours to earn your first milestone!</p>
+        {% endif %}
+    </div>
+
+    <div class="card">
+        <div class="card-header">Upcoming Milestones</div>
+        {% for milestone in upcoming_milestones %}
+        <div style="padding: 1.5rem; border-bottom: 1px solid #E2E8F0;">
+            <h3 style="margin: 0 0 0.5rem 0; color: #2D3748;">{{ milestone.name }}</h3>
+            <p style="margin: 0 0 0.25rem 0; color: #718096; font-size: 0.875rem;">{{ total_hours }}/{{ milestone.hours }} Hours Completed</p>
+            <p style="margin: 0 0 0.75rem 0; color: #718096; font-size: 0.875rem;">Community Service</p>
+            <div class="progress-bar" style="width: 100%; height: 8px; background: #E2E8F0; border-radius: 4px;">
+                <div class="progress-fill" style="width: {{ milestone.progress }}%; height: 100%; background: #805AD5; border-radius: 4px;"></div>
+            </div>
+        </div>
+        {% else %}
+        <p style="color: #718096; text-align: center; padding: 2rem;">All milestones achieved! 🎉</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

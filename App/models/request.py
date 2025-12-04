@@ -8,10 +8,11 @@ class Request(db.Model):
     status = db.Column(db.String(20), nullable=False, default='pending')
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def __init__(self, student_id, hours, status='pending'):
+    def __init__(self, student_id, hours, status='pending', timestamp=None):
         self.student_id = student_id
         self.hours = hours
         self.status = status
+        self.timestamp = timestamp if timestamp is not None else datetime.utcnow()
 
     
     def __repr__(self):
@@ -23,5 +24,5 @@ class Request(db.Model):
             'student_id': self.student_id,
             'hours': self.hours,
             'status': self.status,
-            'timestamp': self.timestamp.isoformat()
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
