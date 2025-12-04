@@ -6,12 +6,14 @@ class Staff(User):
     _tablename_ = "staff"
     staff_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), primary_key=True)
 
+    #relationaship to LoggedHours
     loggedhours = db.relationship('LoggedHours', backref='staff', lazy=True, cascade="all, delete-orphan")
 
+    #Inheritance, Staff is a child of User
     __mapper_args__ = {
         "polymorphic_identity": "staff"
     }
-
+    #calls parent constructor
     def __init__(self, username, email, password):
         super().__init__(username, email, password, role="staff")
 
