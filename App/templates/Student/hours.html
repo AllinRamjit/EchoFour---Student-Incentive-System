@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Logged Hours - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="page-header">
+        <h1 class="page-title">LOGGED HOURS</h1>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; {% if category == 'error' %}background: #FED7D7; color: #C53030;{% else %}background: #C6F6D5; color: #276749;{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    {% if activities and activities|length > 0 %}
+    {% set first_activity = activities[0][1] %}
+    <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">Request Details</div>
+        <div style="padding: 1.5rem;">
+            <p><strong>Student:</strong> {{ current_user.username }}</p>
+            <p><strong>Activity:</strong> {{ first_activity.activity if first_activity.activity else 'Community Service' }}</p>
+            <p><strong>Hours:</strong> {{ first_activity.hours }}</p>
+            <p><strong>Date:</strong> {{ first_activity.timestamp.strftime('%Y-%m-%d') }}</p>
+            <p><strong>Log ID:</strong> {{ first_activity.id }}</p>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <label class="form-label">Additional Notes:</label>
+                <textarea class="form-control" rows="2" placeholder="_______________________________________________________________" readonly></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <span><strong>Status:</strong> 
+                    {% if first_activity.status == 'approved' %}
+                        <span style="color: #38A169;">✔️ Confirmed</span>
+                    {% elif first_activity.status == 'pending' %}
+                        <span style="color: #D69E2E;">🔄 Pending</span>
+                    {% else %}
+                        <span style="color: #E53E3E;">❌ {{ first_activity.status | capitalize }}</span>
+                    {% endif %}
+                </span>
+                {% if first_activity.status == 'pending' %}
+                <a href="/student/confirmations" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Request confirmation</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Previous Activities:</span>
+            <span>All Logged Hours</span>
+        </div>
+
+        {% if activities %}
+            {% for idx, activity in activities %}
+            <div style="padding: 1rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+                <span>{{ activity.activity if activity.activity else 'Activity' }} - {{ activity.hours }} Hours - 
+                    {% if activity.status == 'approved' %}
+                        <span style="color: #38A169;">✔️ Confirmed</span>
+                    {% elif activity.status == 'pending' %}
+                        <span style="color: #D69E2E;">🔄 Pending</span>
+                    {% else %}
+                        <span style="color: #E53E3E;">❌ Not initiated</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+
+            <div style="padding: 1rem; background: #F7FAFC;">
+                <strong>Total Confirmed: {% set ns = namespace(total=0) %}{% for idx, activity in activities %}{% if activity.status == 'approved' %}{% set ns.total = ns.total + activity.hours %}{% endif %}{% endfor %}{{ ns.total }} Hours</strong>
+            </div>
+        {% else %}
+            <p style="color: #718096; text-align: center; padding: 2rem;">No logged hours yet</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

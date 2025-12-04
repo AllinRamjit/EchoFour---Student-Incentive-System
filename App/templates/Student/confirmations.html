@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Pending Confirmations - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="welcome-text">Pending Confirmations</h1>
+
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/student/dashboard" class="nav-menu-item">
+                        <span class="material-icons">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="/student/confirmations" class="nav-menu-item active">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Confirmations
+                    </a>
+                    <a href="/student/accolades" class="nav-menu-item">
+                        <span class="material-icons">emoji_events</span>
+                        My Accolades
+                    </a>
+                    <a href="/student/hours" class="nav-menu-item">
+                        <span class="material-icons">schedule</span>
+                        My Hours & Activities
+                    </a>
+                    <a href="/student/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <div class="main-content">
+            {% if selected_request %}
+            <div class="card">
+                <div class="card-header">Request Details</div>
+                <div style="margin-bottom: 1rem;">
+                    <p><strong>Student:</strong> {{ current_user.username }}</p>
+                    <p><strong>Hours:</strong> {{ selected_request.hours }}</p>
+                    <p><strong>Date:</strong> {{ selected_request.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>Request ID:</strong> {{ selected_request.id }}</p>
+                    <p class="mt-2"><strong>Status:</strong> 
+                        <span class="badge badge-{{ selected_request.status }}">{{ selected_request.status | capitalize }}</span>
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="card">
+                <div class="card-header">All Pending Confirmations</div>
+                {% if pending_requests %}
+                    {% for request in pending_requests %}
+                    <div class="request-item">
+                        <div class="request-info">
+                            <div class="request-student">{{ request.hours }} Hours</div>
+                            <div class="request-details">Submitted: {{ request.timestamp.strftime('%Y-%m-%d %H:%M') }} | ID: {{ request.id }}</div>
+                        </div>
+                        <span class="badge badge-pending">Pending</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No pending confirmations</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div class="card-header">Previous Activities</div>
+                {% if confirmed_requests %}
+                    {% for request in confirmed_requests %}
+                    <div class="request-item">
+                        <div class="request-info">
+                            <div class="request-student">{{ request.hours }} Hours</div>
+                            <div class="request-details">{{ request.timestamp.strftime('%Y-%m-%d') }}</div>
+                        </div>
+                        <span class="badge badge-{{ request.status }}">
+                            {% if request.status == 'approved' %}✔️{% elif request.status == 'denied' %}❌{% endif %} {{ request.status | capitalize }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                    <p class="mt-2" style="font-weight: 600;">Total Confirmed: {{ total_confirmed }} Hours</p>
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No previous activities</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
