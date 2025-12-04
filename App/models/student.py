@@ -1,17 +1,24 @@
 from App.database import db
 from .user import User
 
+
 class Student(User):
 
     _tablename_ = "student"
-    student_id = db.Column(db.Integer, db.ForeignKey("users.user_id"), primary_key=True)
+    student_id = db.Column(db.Integer,
+                           db.ForeignKey("users.user_id"),
+                           primary_key=True)
 
-    loggedhours = db.relationship('LoggedHours', backref='student', lazy=True, cascade="all, delete-orphan")
-    requests = db.relationship('Request', backref='student', lazy=True, cascade="all, delete-orphan")
+    loggedhours = db.relationship('LoggedHours',
+                                  backref='student',
+                                  lazy=True,
+                                  cascade="all, delete-orphan")
+    requests = db.relationship('Request',
+                               backref='student',
+                               lazy=True,
+                               cascade="all, delete-orphan")
 
-    __mapper_args__ = {
-        "polymorphic_identity": "student"
-    }
+    __mapper_args__ = {"polymorphic_identity": "student"}
 
     def __init__(self, username, email, password):
         super().__init__(username, email, password, role="student")
