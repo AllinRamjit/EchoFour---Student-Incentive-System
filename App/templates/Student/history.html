@@ -4,89 +4,74 @@
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1 class="page-title">ACTIVITY HISTORY</h1>
-    </div>
+    <h1 class="welcome-text">Activity History</h1>
 
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header" style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="background: #805AD5; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">1</span>
-            Hours Earned
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/student/dashboard" class="nav-menu-item">
+                        <span class="material-icons">dashboard</span>
+                        Dashboard
+                    </a>
+                    <a href="/student/confirmations" class="nav-menu-item">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Confirmations
+                    </a>
+                    <a href="/student/accolades" class="nav-menu-item">
+                        <span class="material-icons">emoji_events</span>
+                        My Accolades
+                    </a>
+                    <a href="/student/hours" class="nav-menu-item">
+                        <span class="material-icons">schedule</span>
+                        My Hours & Activities
+                    </a>
+                    <a href="/student/history" class="nav-menu-item active">
+                        <span class="material-icons">history</span>
+                        View Activity History
+                    </a>
+                    <a href="/student/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
+            </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
-            {% if history %}
-                {% for idx, entry in history %}
-                {% if entry.status == 'approved' %}
-                <div style="background: #F7FAFC; padding: 1rem; border-radius: 8px; border: 1px solid #E2E8F0;">
-                    <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #2D3748;">Activity</p>
-                    <p style="margin: 0 0 0.25rem 0; color: #4A5568;">{{ entry.hours }} Hours</p>
-                    <p style="margin: 0 0 0.25rem 0; color: #718096; font-size: 0.875rem;">{{ entry.timestamp[:10] }}</p>
-                    <p style="margin: 0 0 0.25rem 0; color: #38A169; font-size: 0.875rem;">✔️ Confirmed</p>
-                    <p style="margin: 0; color: #A0AEC0; font-size: 0.75rem;">Log ID: {{ idx }}</p>
-                </div>
-                {% endif %}
-                {% endfor %}
-            {% else %}
-                <p style="color: #718096; text-align: center; padding: 1rem; grid-column: 1 / -1;">No hours earned yet</p>
-            {% endif %}
-        </div>
-    </div>
 
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header" style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="background: #805AD5; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">2</span>
-            Milestones Achieved
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
-            {% set ns = namespace(has_milestones=false) %}
-            {% if history %}
-                {% for idx, entry in history %}
-                {% if entry.milestones_achieved %}
-                    {% set ns.has_milestones = true %}
-                    {% for milestone in entry.milestones_achieved %}
-                    <div style="background: #FAF5FF; padding: 1rem; border-radius: 8px; border: 1px solid #E9D8FD;">
-                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #6B46C1;">🏆 {{ milestone }}</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #4A5568;">{{ entry.hours }} Hours</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #718096; font-size: 0.875rem;">{{ entry.timestamp[:10] }}</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #38A169; font-size: 0.875rem;">Achieved</p>
-                        <p style="margin: 0; color: #A0AEC0; font-size: 0.75rem;">Log ID: {{ idx }}</p>
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Activity Logs</div>
+
+                {% if history %}
+                    <div class="activity-log">
+                        {% for idx, entry in history %}
+                        <div class="activity-item">
+                            <div class="activity-title">
+                                <span style="background: #6B46C1; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.5rem;">{{ idx }}</span>
+                                {{ entry.hours }} Hours Logged
+                            </div>
+                            <div class="activity-meta">
+                                {{ entry.timestamp[:10] }} | 
+                                <span class="badge badge-{{ entry.status }}">{{ entry.status | capitalize }}</span>
+                                | Cumulative: {{ entry.cumulative_hours }} Hours
+                            </div>
+                            {% if entry.milestones_achieved %}
+                            <div style="margin-top: 0.5rem;">
+                                {% for milestone in entry.milestones_achieved %}
+                                <span style="background: #FAF5FF; color: #6B46C1; padding: 0.25rem 0.75rem; border-radius: 8px; font-size: 0.75rem; margin-right: 0.5rem;">
+                                    🏆 {{ milestone }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No activity history found. Start logging hours to build your history!</p>
                 {% endif %}
-                {% endfor %}
-            {% endif %}
-            {% if not ns.has_milestones %}
-                <p style="color: #718096; text-align: center; padding: 1rem; grid-column: 1 / -1;">No milestones achieved yet. Keep logging hours!</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header" style="display: flex; align-items: center; gap: 0.5rem;">
-            <span style="background: #805AD5; color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.875rem;">3</span>
-            Accolades Rewarded
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; padding: 1rem;">
-            {% set ns2 = namespace(has_accolades=false) %}
-            {% if history %}
-                {% for idx, entry in history %}
-                {% if entry.milestones_achieved %}
-                    {% set ns2.has_accolades = true %}
-                    {% for milestone in entry.milestones_achieved %}
-                    <div style="background: #FFFAF0; padding: 1rem; border-radius: 8px; border: 1px solid #FEEBC8;">
-                        <p style="margin: 0 0 0.5rem 0; font-weight: 600; color: #C05621;">🎖️ {{ milestone }}</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #4A5568;">{{ entry.hours }} Hours</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #718096; font-size: 0.875rem;">{{ entry.timestamp[:10] }}</p>
-                        <p style="margin: 0 0 0.25rem 0; color: #38A169; font-size: 0.875rem;">Rewarded</p>
-                        <p style="margin: 0; color: #A0AEC0; font-size: 0.75rem;">Log ID: {{ idx }}</p>
-                    </div>
-                    {% endfor %}
-                {% endif %}
-                {% endfor %}
-            {% endif %}
-            {% if not ns2.has_accolades %}
-                <p style="color: #718096; text-align: center; padding: 1rem; grid-column: 1 / -1;">No accolades rewarded yet</p>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>
