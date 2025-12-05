@@ -82,11 +82,14 @@ class UserUnitTests(unittest.TestCase):
         db.session.add(user)
         db.session.commit()
         
-        result = User.login("testuser", "testpass")
+        # Use controller-level authentication helper instead of model method
+        from App.controllers.auth import authenticate_user
+
+        result = authenticate_user("testuser", "testpass")
         self.assertIsNotNone(result)
         self.assertEqual(result.username, "testuser")
-        
-        result = User.login("testuser", "wrongpass")
+
+        result = authenticate_user("testuser", "wrongpass")
         self.assertIsNone(result)
 
 class StaffUnitTests(unittest.TestCase):

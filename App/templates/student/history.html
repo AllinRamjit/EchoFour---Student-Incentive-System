@@ -46,15 +46,19 @@
                 {% if history %}
                     <div class="activity-log">
                         {% for idx, entry in history %}
+                        {% set ts = entry.timestamp or entry.dateLogged %}
+                        {% set ts_short = ts[:10] if ts else '' %}
+                        {% set hrs = entry.hours or entry.hoursLogged or 0 %}
+                        {% set status = entry.status or '' %}
                         <div class="activity-item">
                             <div class="activity-title">
                                 <span style="background: #6B46C1; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; margin-right: 0.5rem;">{{ idx }}</span>
-                                {{ entry.hours }} Hours Logged
+                                {{ hrs }} Hours Logged
                             </div>
                             <div class="activity-meta">
-                                {{ entry.timestamp[:10] }} | 
-                                <span class="badge badge-{{ entry.status }}">{{ entry.status | capitalize }}</span>
-                                | Cumulative: {{ entry.cumulative_hours }} Hours
+                                {{ ts_short }} | 
+                                <span class="badge badge-{{ status }}">{{ status | capitalize }}</span>
+                                | Cumulative: {{ entry.cumulative_hours or 0 }} Hours
                             </div>
                             {% if entry.milestones_achieved %}
                             <div style="margin-top: 0.5rem;">
