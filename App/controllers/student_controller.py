@@ -15,11 +15,70 @@ def get_activity_history(student_id):
     if not student:
         raise ValueError(f"Student with id {student_id} not found.")
     
-    # Get activities using the relationship
+    # Get activities using the relationship (Activity model)
     activities = student.activities if hasattr(student, 'activities') else Activity.query.filter_by(studentID=student_id).all()
-    
-    # Return activities as dicts
-    return [activity.to_dict() for activity in activities]
+
+    # Build enriched activity dicts to match what the UI template expects
+    # Ensure we preserve the original to_dict() keys for backward compatibility
+    enriched = []
+
+    # Sort activities chronologically (oldest first) by dateLogged when available
+    def _activity_ts(a):
+        # prefer datetime attribute if present
+        val = getattr(a, 'dateLogged', None)
+        if val is None:
+            # fallback: try to parse from to_dict() representation
+            try:
+                d = a.to_dict()
+                return d.get('dateLogged')
+            except Exception:
+                return None
+        return val
+
+    activities_sorted = sorted(activities, key=lambda x: _activity_ts(x) or 0)
+
+    cumulative = 0
+    milestones = [10, 25, 50, 100]
+
+    for act in activities_sorted:
+        base = {}
+        try:
+            base = act.to_dict() or {}
+        except Exception:
+            base = {}
+
+        # normalize common fields
+        hours = base.get('hoursLogged') or base.get('hours') or 0
+        # date string from to_dict() is already ISO-formatted in Activity.to_dict()
+        timestamp = base.get('dateLogged') or base.get('timestamp') or None
+        status = (base.get('status') or '').lower()
+
+        # Update cumulative only for confirmed/approved entries
+        if status in ('confirmed', 'approved'):
+            try:
+                cumulative += float(hours)
+            except Exception:
+                pass
+
+        # Determine milestones achieved at this point (those crossed by cumulative now)
+        achieved = []
+        for m in milestones:
+            if cumulative >= m:
+                achieved.append(f"{m} Hours Milestone")
+
+        # Construct enriched dict, preserving original keys
+        enriched_entry = dict(base)
+        enriched_entry.update({
+            'hours': hours,
+            'timestamp': timestamp,
+            'status': status,
+            'cumulative_hours': cumulative,
+            'milestones_achieved': achieved
+        })
+
+        enriched.append(enriched_entry)
+
+    return enriched
 
 def register_student(name, email, password):
     # prevent duplicate username or email

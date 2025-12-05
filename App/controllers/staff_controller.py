@@ -80,6 +80,55 @@ def process_request_denial(staff_id, request_id): #staff denies a student's hour
         'staff_name': staff.username,
         'denial_successful': True
     }
+
+def confirm_hours(log_id): #confirms/approves hours logged for a student
+    from App.models import Activity
+    activity = Activity.query.get(log_id)
+    if not activity:
+        raise ValueError(f"Activity with id {log_id} not found.")
+    
+    activity.status = "Confirmed"
+    
+    # Update student's total hours
+    student = Student.query.get(activity.studentID)
+    if student:
+        student.totalHours = (student.totalHours or 0) + activity.hoursLogged
+    
+    db.session.commit()
+    return activity
+
+def reject_hours(log_id): #rejects hours logged for a student
+    from App.models import Activity
+    activity = Activity.query.get(log_id)
+    if not activity:
+        raise ValueError(f"Activity with id {log_id} not found.")
+    
+    activity.status = "Rejected"
+    db.session.commit()
+    return activity
+
+def log_hours_for_student(staff_id, student_id, hours, description=""): #staff directly logs hours for a student
+    from App.models import Activity
+    import uuid
+    
+    staff = Staff.query.get(staff_id)
+    if not staff:
+        raise ValueError(f"Staff with id {staff_id} not found.")
+    
+    student = Student.query.get(student_id)
+    if not student:
+        raise ValueError(f"Student with id {student_id} not found.")
+    
+    # Create activity with Confirmed status since staff is logging it directly
+    log_id = str(uuid.uuid4())
+    activity = Activity(logID=log_id, studentID=student_id, hoursLogged=hours, status="Confirmed", description=description)
+    
+    # Update student's total hours
+    student.totalHours = (student.totalHours or 0) + hours
+    
+    db.session.add(activity)
+    db.session.commit()
+    return activity
     
 def get_all_staff_json(): #returns all staff members in JSON format
     staff_members = Staff.query.all()
