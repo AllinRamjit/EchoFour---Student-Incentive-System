@@ -4,60 +4,90 @@
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1 class="page-title">STUDENT DASHBOARD</h1>
-    </div>
+    <h1 class="welcome-text">Welcome, {{ current_user.username }}</h1>
 
-    <h2 class="welcome-text">Welcome, {{ current_user.username }}</h2>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; {% if category == 'error' %}background: #FED7D7; color: #C53030;{% else %}background: #C6F6D5; color: #276749;{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">Navigation</div>
-        <nav class="nav-menu" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;">
-            <a href="/student/hours" class="nav-menu-item">
-                View all logged hours & request confirmations
-            </a>
-            <a href="/student/accolades" class="nav-menu-item">
-                My Accolades
-            </a>
-            <a href="/student/history" class="nav-menu-item">
-                View Activity History
-            </a>
-            <a href="/student/leaderboard" class="nav-menu-item">
-                View Leaderboard
-            </a>
-        </nav>
-    </div>
-
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">Hours Summary</div>
-        <div style="padding: 1rem;">
-            <p style="margin-bottom: 0.5rem;"><strong>Hours Confirmed:</strong> {{ confirmed_hours }} Hours</p>
-            <p style="margin-bottom: 0.5rem;"><strong>Pending Approval:</strong> {{ pending_hours }} Hours</p>
-            <p style="margin-bottom: 0;"><strong>Next Milestone:</strong> {{ next_milestone }} (Current {{ confirmed_hours }})</p>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-header">Recent Activities</div>
-        {% if recent_activities %}
-            {% for activity in recent_activities %}
-            <div class="request-item" style="padding: 1rem; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
-                <span>{{ activity.activity if activity.activity else 'Activity' }} - {{ activity.hours }} Hours - {% if activity.status == 'approved' %}Confirmed{% elif activity.status == 'pending' %}Pending{% else %}{{ activity.status | capitalize }}{% endif %}</span>
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/student/confirmations" class="nav-menu-item">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Confirmations
+                    </a>
+                    <a href="/student/accolades" class="nav-menu-item">
+                        <span class="material-icons">emoji_events</span>
+                        My Accolades
+                    </a>
+                    <a href="/student/hours" class="nav-menu-item">
+                        <span class="material-icons">schedule</span>
+                        My Hours & Activities
+                    </a>
+                    <a href="/student/history" class="nav-menu-item">
+                        <span class="material-icons">history</span>
+                        View Activity History
+                    </a>
+                    <a href="/student/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
             </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: #718096; text-align: center; padding: 2rem;">No recent activities</p>
-        {% endif %}
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Hours Summary</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Hours Confirmed</div>
+                        <div class="stat-value">{{ confirmed_hours }} Hours</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Approval</div>
+                        <div class="stat-value">{{ pending_hours }} Hours</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Next Milestone</div>
+                        <div class="stat-value">{{ next_milestone }} Hours</div>
+                        <div class="stat-label mt-2">Current: {{ confirmed_hours }}/{{ next_milestone }}</div>
+                        <div class="progress-bar" style="width: 100%; margin-top: 0.5rem;">
+                            <div class="progress-fill" style="width: {{ milestone_progress }}%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Recent Activities</div>
+                {% if recent_activities %}
+                    {% for activity in recent_activities %}
+                    <div class="request-item">
+                        <div class="request-info">
+                            <div class="request-student">{{ activity.hours }} Hours</div>
+                            <div class="request-details">{{ activity.timestamp }}</div>
+                        </div>
+                        <span class="badge badge-{{ 'approved' if activity.status == 'approved' else 'pending' if activity.status == 'pending' else 'denied' }}">
+                            {{ activity.status | capitalize }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No recent activities</p>
+                {% endif %}
+            </div>
+
+            <div class="card">
+                <div class="card-header">Request New Hours</div>
+                <form method="POST" action="/student/request-hours">
+                    <div class="form-group">
+                        <label class="form-label" for="hours">Hours to Request</label>
+                        <input type="number" id="hours" name="hours" class="form-control" placeholder="Enter number of hours" min="0.5" step="0.5" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
