@@ -83,4 +83,4 @@ def process_request_denial(staff_id, request_id): #staff denies a student's hour
     
 def get_all_staff_json(): #returns all staff members in JSON format
     staff_members = Staff.query.all()
-    return [staff.get_json() for staff in staff_members]
+    return [staff.get_json() for staff in staff_members]

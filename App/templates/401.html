@@ -1,22 +1,19 @@
-{% extends "layout.html" %}
-{% block title %}Not Authorized{% endblock %}
-{% block page %}Not Auhtorized{% endblock %}
+{% extends "base.html" %}
 
-{{ super() }}
+{% block title %}Not Authorized - Student Incentive System{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row" style="margin-top: 10%;">
-        <div class="col s12 m10 offset-m1">
-            <div class="card-content">
-                <h1>401 - Not Authorized</h1>
-                <p>You do not have permission to access this resource. Please check your credentials and try again.</p>
-                <p>{{error}}</p>
-            </div>
-            <div class="card-action">
-                <a href="/" class="waves-effect waves-light btn">Go Home</a>
-                <a href="javascript:history.back()" class="waves-effect waves-light btn">Go Back</a>
-            </div>
+<div class="auth-container">
+    <div class="auth-card" style="text-align: center;">
+        <h1 style="font-size: 4rem; color: #E53E3E; margin-bottom: 0.5rem;">401</h1>
+        <h2 style="font-size: 1.5rem; color: #2D3748; margin-bottom: 1rem;">Not Authorized</h2>
+        <p style="color: #718096; margin-bottom: 1.5rem;">You do not have permission to access this resource. Please login to continue.</p>
+        {% if error %}
+        <p style="color: #E53E3E; font-size: 0.875rem; margin-bottom: 1.5rem;">{{ error }}</p>
+        {% endif %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <a href="/login" class="btn btn-primary">Login</a>
+            <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
         </div>
     </div>
 </div>

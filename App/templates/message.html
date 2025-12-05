@@ -1,14 +1,14 @@
-{% extends "layout.html" %}
-{% block title %}{{title}}{% endblock %}
-{% block page %}{{title}}{% endblock %}
+{% extends "base.html" %}
 
-{{ super() }}
+{% block title %}{{ title }} - Student Incentive System{% endblock %}
 
 {% block content %}
 <div class="container">
-    <div class="row" style="margin-top: 10%;">
-        <div class="col s12 m10 offset-m1">
-            <p>{{message}}</p>
+    <div class="card" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+        <h2 style="color: #2D3748; margin-bottom: 1rem;">{{ title }}</h2>
+        <p style="color: #718096;">{{ message }}</p>
+        <div style="margin-top: 1.5rem;">
+            <a href="/" class="btn btn-primary">Go Home</a>
         </div>
     </div>
 </div>

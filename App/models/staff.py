@@ -26,4 +26,3 @@ class Staff(User):
             'username': self.username,
             'email': self.email
         }
-

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Student Leaderboard - Student Incentive System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="text-center mb-3">
+        <h1 class="welcome-text">Student Leaderboard</h1>
+        <p style="color: #718096;">Ranked by Confirmed Community Service Hours</p>
+    </div>
+    
+    <div class="card" style="max-width: 700px; margin: 0 auto;">
+        {% if leaderboard %}
+            {% for entry in leaderboard %}
+            <div class="leaderboard-item" style="{% if loop.index == 1 %}background: linear-gradient(135deg, #FFF9DB 0%, #FEF3C7 100%); border: 1px solid #F6E05E;{% elif loop.index == 2 %}background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%); border: 1px solid #CBD5E0;{% elif loop.index == 3 %}background: linear-gradient(135deg, #FFFAF0 0%, #FEEBC8 100%); border: 1px solid #F6AD55;{% endif %}">
+                <div class="leaderboard-medal">
+                    {% if loop.index == 1 %}🥇
+                    {% elif loop.index == 2 %}🥈
+                    {% elif loop.index == 3 %}🥉
+                    {% else %}<span class="leaderboard-rank">{{ loop.index }}</span>
+                    {% endif %}
+                </div>
+                <div style="flex: 1;">
+                    <div class="leaderboard-name">{{ entry.name }}</div>
+                    <div class="leaderboard-hours">{{ entry.hours }} Hours | {{ entry.accolades|length }} Accolades</div>
+                </div>
+                <div class="leaderboard-progress">
+                    <div style="font-size: 0.875rem; color: #718096;">{{ entry.milestone_progress }}% to next milestone</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ entry.milestone_progress }}%;"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #718096; text-align: center; padding: 2rem;">No students on the leaderboard yet</p>
+        {% endif %}
+    </div>
+    
+    <div class="text-center mt-3">
+        {% if is_authenticated and current_user %}
+            {% if current_user.role == 'student' %}
+                <a href="/student/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            {% elif current_user.role == 'staff' %}
+                <a href="/staff/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
