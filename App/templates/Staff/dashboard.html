@@ -4,59 +4,63 @@
 
 {% block content %}
 <div class="container">
-    <div class="page-header">
-        <h1 class="page-title">STAFF DASHBOARD</h1>
-    </div>
+    <h1 class="welcome-text">Welcome, {{ current_user.username }}</h1>
 
-    <h2 class="welcome-text">Welcome, {{ current_user.username }}</h2>
+    <div class="two-column">
+        <div class="sidebar">
+            <div class="card">
+                <div class="card-header">Navigation</div>
+                <nav class="nav-menu">
+                    <a href="/staff/log-hours" class="nav-menu-item">
+                        <span class="material-icons">add_circle</span>
+                        Log Hours for Student
+                    </a>
+                    <a href="/staff/requests" class="nav-menu-item">
+                        <span class="material-icons">pending_actions</span>
+                        Pending Student Requests
+                    </a>
+                    <a href="/staff/leaderboard" class="nav-menu-item">
+                        <span class="material-icons">leaderboard</span>
+                        View Leaderboard
+                    </a>
+                </nav>
+            </div>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" style="margin-bottom: 1rem; padding: 0.75rem; border-radius: 8px; {% if category == 'error' %}background: #FED7D7; color: #C53030;{% else %}background: #C6F6D5; color: #276749;{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <div class="card" style="margin-bottom: 1.5rem;">
-        <div class="card-header">Navigation</div>
-        <nav class="nav-menu" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 1rem;">
-            <a href="/staff/log-hours" class="nav-menu-item">
-                Log Hours for Student
-            </a>
-            <a href="/staff/requests" class="nav-menu-item">
-                Pending Student Requests
-            </a>
-            <a href="/staff/leaderboard" class="nav-menu-item">
-                View Leaderboard
-            </a>
-        </nav>
-    </div>
-
-    <div class="card">
-        <div class="card-header">Pending Student Requests</div>
-        {% if pending_requests %}
-            {% for request in pending_requests %}
-            <div class="request-item" style="padding: 1rem; border-bottom: 1px solid #E2E8F0;">
-                <div class="request-info" style="margin-bottom: 0.75rem;">
-                    <strong>Student: {{ request.student_name }}</strong> - {{ request.hours }} Hours - {{ request.activity if request.activity else 'Community Service' }}
-                </div>
-                <div class="request-actions" style="display: flex; gap: 0.5rem;">
-                    <form method="POST" action="/staff/approve/{{ request.id }}" style="display: inline;">
-                        <button type="submit" class="btn btn-success" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Approve</button>
-                    </form>
-                    <form method="POST" action="/staff/deny/{{ request.id }}" style="display: inline;">
-                        <button type="submit" class="btn btn-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;">Reject</button>
-                    </form>
-                    <a href="/staff/request/{{ request.id }}" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">View Details</a>
+            <div class="card">
+                <div class="card-header">Quick Stats</div>
+                <div class="stat-card">
+                    <div class="stat-label">Pending Requests</div>
+                    <div class="stat-value">{{ pending_count }}</div>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p style="color: #718096; text-align: center; padding: 2rem;">No pending requests</p>
-        {% endif %}
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <div class="card-header">Pending Student Requests</div>
+                {% if pending_requests %}
+                    {% for request in pending_requests %}
+                    <div class="request-item">
+                        <div class="request-info">
+                            <div class="request-student">Student: {{ request.student_name }}</div>
+                            <div class="request-details">{{ request.hours }} Hours | Submitted: {{ request.timestamp }}</div>
+                        </div>
+                        <div class="request-actions">
+                            <form method="POST" action="/staff/approve/{{ request.id }}" style="display: inline;">
+                                <button type="submit" class="btn btn-success">Approve</button>
+                            </form>
+                            <form method="POST" action="/staff/deny/{{ request.id }}" style="display: inline;">
+                                <button type="submit" class="btn btn-danger">Reject</button>
+                            </form>
+                            <a href="/staff/request/{{ request.id }}" class="btn btn-secondary">View Details</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #718096; text-align: center; padding: 2rem;">No pending requests</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
